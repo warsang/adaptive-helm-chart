@@ -360,13 +360,17 @@ otelCollector:
   prometheus:
     scrapeInterval: "15s"
 
-  # Resource attributes added to OTEL_RESOURCE_ATTRIBUTES env var on all pods
+  # Resource attributes added by the otel-collector's resource processor
+  # These attributes are applied to all telemetry data passing through the collector
   resourceAttributes:
     # Override the environment name (defaults to release name)
     environmentName: ""
-    # Additional attributes to append (comma-separated key=value pairs)
-    # Example: "service.namespace=production,deployment.region=us-east-1"
-    extra: ""
+    # Additional attributes to add (key-value map)
+    # Example:
+    #   extra:
+    #     service.namespace: production
+    #     deployment.region: us-east-1
+    extra: {}
 
   # Exporters configuration
   # Define where to send telemetry data (traces, metrics, logs)
@@ -389,19 +393,20 @@ otelCollector:
   # Pipelines configuration
   # Define how data flows from receivers through processors to exporters
   # Available receivers: [otlp, prometheus]
-  # Available processors: [memory_limiter, batch]
+  # Available processors: [memory_limiter, batch, resource]
+  # Note: The 'resource' processor adds attributes from resourceAttributes config
   pipelines: |
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
+      processors: [memory_limiter, resource, batch]
       exporters: [debug]
     metrics:
       receivers: [otlp, prometheus]
-      processors: [memory_limiter, batch]
+      processors: [memory_limiter, resource, batch]
       exporters: [debug]
     logs:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
+      processors: [memory_limiter, resource, batch]
       exporters: [debug]
 
 mlflow:
